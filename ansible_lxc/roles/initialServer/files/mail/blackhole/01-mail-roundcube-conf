@@ -1,6 +1,6 @@
 # server {
 # 	listen 8080;
-# 	server_name www.gotomalls.com gotomalls.com *.gotomalls.com;
+# 	server_name www.hello.com hello.com *.hello.com;
 # 	return 301 https://$host$request_uri;
 # }
 #
@@ -14,8 +14,8 @@ server {
     keepalive_timeout 60;
 
     location / {
-      #  rewrite ^/privacy-policy$ https://www2.gotomalls.com/privacy-policy permanent;
-      #  rewrite ^/terms-and-conditions$ https://www2.gotomalls.com/terms-and-conditions permanent;
+      #  rewrite ^/privacy-policy$ https://www2.hello.com/privacy-policy permanent;
+      #  rewrite ^/terms-and-conditions$ https://www2.hello.com/terms-and-conditions permanent;
 
        access_log /var/log/nginx/mailBlackHole_access.log;
        error_log  /var/log/nginx/mailBlackHole_error.log;
@@ -40,7 +40,7 @@ server {
     }
 
     # location /blog/ {
-    #    proxy_pass http://blog.gotomalls.com/;
+    #    proxy_pass http://blog.hello.com/;
     #    proxy_pass_request_headers on;
     #    proxy_set_header X-Orbit-Origin-App "GTM-Landing-Page";
     #    proxy_cache blog_cache;

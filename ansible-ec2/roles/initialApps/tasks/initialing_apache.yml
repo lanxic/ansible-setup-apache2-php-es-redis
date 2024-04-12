@@ -12,8 +12,8 @@
 
 - name: Enable module rewrite
   apache2_module: >
-      name={{ item }}
-      state=present
+    name={{ item }}
+    state=present
   with_items:
     - access_compat
     - alias
@@ -44,75 +44,75 @@
 
 - name: Deploy https-redirect config apache2
   copy: >
-      src=apache2/991https-redirect.conf
-      dest={{ apache_path_config }}/sites-available/991https-redirect.conf
-      mode=0644
+    src=apache2/991https-redirect.conf
+    dest={{ apache_path_config }}/sites-available/991https-redirect.conf
+    mode=0644
 
 - name: Deploy admin staging config apache2
   copy: >
-      src=apache2/992admin-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/992admin-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/992admin-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/992admin-staging1.hello.conf
+    mode=0644
 
 - name: Deploy landing staging config apache2
   copy: >
-      src=apache2/993landing-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/993landing-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/993landing-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/993landing-staging1.hello.conf
+    mode=0644
 
 - name: Deploy mall api staging config apache2
   copy: >
-      src=apache2/994mall-api-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/994mall-api-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/994mall-api-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/994mall-api-staging1.hello.conf
+    mode=0644
 
 - name: Deploy mall staging config apache2
   copy: >
-      src=apache2/995mall-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/995mall-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/995mall-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/995mall-staging1.hello.conf
+    mode=0644
 
 - name: Deploy mdm staging config apache2
   copy: >
-      src=apache2/996mdm-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/996mdm-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/996mdm-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/996mdm-staging1.hello.conf
+    mode=0644
 
 - name: Deploy pmp staging config apache2
   copy: >
-      src=apache2/997pmp-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/997pmp-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/997pmp-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/997pmp-staging1.hello.conf
+    mode=0644
 
 - name: Deploy shop staging config apache2
   copy: >
-      src=apache2/998shop-api-staging1.gotomalls.conf
-      dest={{ apache_path_config }}/sites-available/998shop-api-staging1.gotomalls.conf
-      mode=0644
+    src=apache2/998shop-api-staging1.hello.conf
+    dest={{ apache_path_config }}/sites-available/998shop-api-staging1.hello.conf
+    mode=0644
 
 - name: Enable https-redirect config apache2
   shell: a2ensite 991https-redirect.conf
 
 - name: Enable admin staging config apache2
-  shell: a2ensite 992admin-staging1.gotomalls.conf
+  shell: a2ensite 992admin-staging1.hello.conf
 
 - name: Enable landing staging config apache2
-  shell: a2ensite 993landing-staging1.gotomalls.conf
+  shell: a2ensite 993landing-staging1.hello.conf
 
 - name: Enable mall api staging config apache2
-  shell: a2ensite 994mall-api-staging1.gotomalls.conf
+  shell: a2ensite 994mall-api-staging1.hello.conf
 
 - name: Enable mall staging config apache2
-  shell: a2ensite 995mall-staging1.gotomalls.conf
+  shell: a2ensite 995mall-staging1.hello.conf
 
 - name: Enable mdm staging config apache2
-  shell: a2ensite 996mdm-staging1.gotomalls.conf
+  shell: a2ensite 996mdm-staging1.hello.conf
 
 - name: Enable pmp staging config apache2
-  shell: a2ensite 997pmp-staging1.gotomalls.conf
+  shell: a2ensite 997pmp-staging1.hello.conf
 
 - name: Enable shop staging config apache2
-  shell: a2ensite 998shop-api-staging1.gotomalls.conf
+  shell: a2ensite 998shop-api-staging1.hello.conf
 
 - name: Create the diretory staging
   file: >
