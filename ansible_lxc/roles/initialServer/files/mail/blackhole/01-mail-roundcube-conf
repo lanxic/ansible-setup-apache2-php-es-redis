@@ -1,0 +1,51 @@
+# server {
+# 	listen 8080;
+# 	server_name www.gotomalls.com gotomalls.com *.gotomalls.com;
+# 	return 301 https://$host$request_uri;
+# }
+#
+# # Proxy for Blog
+# proxy_cache_path /var/log/nginx/cache levels=1:2 keys_zone=blog_cache:10m max_size=3g
+#                  inactive=60m use_temp_path=off;
+
+server {
+    listen          80;
+    server_name     mail.manroe.cool;
+    keepalive_timeout 60;
+
+    location / {
+      #  rewrite ^/privacy-policy$ https://www2.gotomalls.com/privacy-policy permanent;
+      #  rewrite ^/terms-and-conditions$ https://www2.gotomalls.com/terms-and-conditions permanent;
+
+       access_log /var/log/nginx/mailBlackHole_access.log;
+       error_log  /var/log/nginx/mailBlackHole_error.log;
+       root /opt/roundcubemail;
+       index index.php;
+       try_files $uri $uri/ /index.php?$args;
+
+       location ~* \.php {
+         try_files $uri =404;
+         fastcgi_pass   unix:///tmp/php-fpm7.sock;
+         fastcgi_index  index.php;
+         fastcgi_param  SCRIPT_FILENAME  /opt/roundcubemail$fastcgi_script_name;
+         fastcgi_param  REMOTE_ADDR $http_x_real_ip;
+         include        /etc/nginx/fastcgi_params;
+       }
+
+       location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml|rss|txt|eot|ttf|woff|woff2)$ {
+         access_log        off;
+         log_not_found     off;
+         expires           30d;
+       }
+    }
+
+    # location /blog/ {
+    #    proxy_pass http://blog.gotomalls.com/;
+    #    proxy_pass_request_headers on;
+    #    proxy_set_header X-Orbit-Origin-App "GTM-Landing-Page";
+    #    proxy_cache blog_cache;
+    #    proxy_cache_revalidate on;
+    #    proxy_cache_min_uses 3;
+    # }
+
+}

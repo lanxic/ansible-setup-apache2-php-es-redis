@@ -1,0 +1,46 @@
+---
+- name: generate lxc_container for postgresql
+  lxc_container:
+    template: ubuntu
+    name: "{{ item.name }}"
+    template_options: --release trusty --auth-key ~/.ssh/id_rsa.pub
+    container_command: |
+      sed -i 's/dhcp/static/g' /etc/network/interfaces
+      echo 'nameserver 10.11.0.1' | tee /etc/resolvconf/resolv.conf.d/base
+      apt-get -y update
+      apt-get install -y python
+      apt-get install -y openssh-server
+      echo '%admins ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/admins
+      groupadd admins
+      usermod -aG admins ubuntu
+    container_config:
+      - "lxc.start.auto = 1"
+      - "lxc.network.ipv4 = {{ item.ips }}/24 10.11.0.255"
+      - "lxc.network.ipv4.gateway = 10.11.0.1"
+  with_items: "{{ active_apps }}"
+  register: containers_info
+
+- name: Get containers info now that IPs are available
+  lxc_container:
+    name: "{{ item.name }}"
+  with_items: "{{ active_apps }}"
+  register: containers_info
+
+- name: Register the hosts in the inventory {{ item.ips}}
+  add_host:
+    hostname: "{{ item.ips}}"
+    groupname: "{{ item.service }}"
+  with_items: "{{ active_apps }}"
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item.lxc_container.ips.0 }}"
+    port: 22
+    delay: 60
+    timeout: 320
+    state: started
+  with_items: "{{ containers_info.results }}"
+
+- name: Wait for the network to be setup in the containers
+  pause: minutes=2
+  # when: containers_info|changed

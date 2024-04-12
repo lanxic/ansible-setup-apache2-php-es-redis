@@ -1,0 +1,16 @@
+# ---
+# - name: Install ansible for lxc
+#   hosts: remotes
+#   become: True
+#   gather_facts: False
+#   tags: provisionLxc
+#   roles:
+#     - provisionLxc
+
+- name: Initial instance for lxc
+  hosts: remotes
+  become: True
+  gather_facts: False
+  tags: initialLxcServer
+  roles:
+    - initialServer

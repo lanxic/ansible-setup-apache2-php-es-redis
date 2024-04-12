@@ -1,0 +1,4 @@
+---
+- include: initialing_system.yml
+- include: "{{item.initialLxcServer}}"
+  with_items: "{{ active_apps }}"

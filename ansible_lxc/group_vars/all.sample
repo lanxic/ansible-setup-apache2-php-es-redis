@@ -1,0 +1,34 @@
+containers:
+  - name: redis-1
+    service: lxc-launch
+    provisionLxc: generateRedisLXC_instance.yml
+    initialLxcServer: initialing_redis.yml
+    ips: 10.11.0.81
+  - name: mysql-1
+    service: lxc-launch
+    provisionLxc: generateDBLXC_instance.yml
+    initialLxcServer: initialing_mysql.yml
+    ips: 10.11.0.101
+    db_database_user: root
+    db_database_pass: Star1ng@Thecloud
+  - name: elasticsearch-1
+    service: lxc-launch
+    provisionLxc: generateElasticsearchLXC_instance.yml
+    initialLxcServer: initialing_elasticsearch.yml
+    ips: 10.11.0.41
+  - name: mongodb-1
+    service: lxc-launch
+    provisionLxc: generateMongodbLXC_instance.yml
+    initialLxcServer: initialing_mongodb.yml
+    ips: 10.11.0.201
+  - name: hadoop-1
+    service: lxc-launch
+    provisionLxc: generateHadoopLXC_instance.yml
+    initialLxcServer: initialing_hadoop.yml
+    ips: 10.11.0.202
+  - name: mailblackhole-1
+    service: lxc-launch
+    provisionLxc: generateMailBlackHoleLXC_instance.yml
+    initialLxcServer: initialing_mailblackhole.yml
+    ips: 10.11.0.71
+active_apps: "{{ containers if app is not defined else containers | selectattr('name', 'match', app) | list }}"

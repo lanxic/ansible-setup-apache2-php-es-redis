@@ -1,0 +1,6 @@
+cluster.name: gotomalls
+node.name: gotomalls-es1
+path.data: /var/elasticsearch/data
+path.repo: /var/elasticsearch/snapshot
+network.host: 0.0.0.0
+indices.fielddata.cache.size:  40%

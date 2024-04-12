@@ -1,0 +1,29 @@
+- name: Start/Restart redis and Start @ Boot
+  service: name=redis state=restarted enabled=yes
+
+- name: Start/Restart mysqld and Start @ Boot
+  service: name=mysql state=restarted enabled=yes
+
+- name: Start/Restart elasticsearch and Start @ Boot
+  service: name=elasticsearch state=restarted enabled=yes
+
+- name: Start/Restart mongod and Start @ Boot
+  service: name=mongod state=restarted enabled=yes
+
+- name: Start/Restart postfix and Start @ Boot
+  service: name=postfix state=restarted enabled=yes
+
+- name: Start/Restart dovecot and Start @ Boot
+  service: name=dovecot state=restarted enabled=yes
+
+- name: Start/Restart supervisor and Start @ Boot
+  service: name=supervisor state=restarted enabled=yes
+
+- name: Start/Restart nginx and Start @ Boot
+  service: name=nginx state=restarted enabled=yes
+
+- name: Start/Restart php7.0-fpm and Start @ Boot
+  service: name=php7.0-fpm state=restarted enabled=yes
+
+- name: Start/Restart PostgreSQL and Start @ Boot
+  service: name=postgresql state=restarted enabled=yes

@@ -1,0 +1,58 @@
+---
+- name: add repo key mongodb
+  apt_key: >
+    keyserver=keyserver.ubuntu.com
+    id=0C49F3730359A14518585931BC711F9BA15703C6
+
+- name: add repo list for mongodb
+  copy: >
+    src=files/mongodb/mongodb_list
+    dest=/etc/apt/sources.list.d/mongodb-org-3.4.list
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing packages
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - python-boto
+    - vim
+    - unzip
+    - curl
+    - htop
+    - language-pack-en-base
+
+- name: Check if Mongodb is already installed.
+  stat: path=/etc/init.d/mongod
+  register: mongod_installed
+
+- name: Update apt cache if Mongodb is not yet installed.
+  apt: update_cache=yes
+  when: mongod_installed.stat.exists == false
+
+- name: Ensure Mongodb packages are installed.
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - mongodb-org
+  when: mongod_installed.stat.exists == false
+  notify: Start/Restart mongod and Start @ Boot
+
+- name: Change owner /var/www/qademo/latest/orbit-mongo-node to git
+  file: >
+    owner=git
+    group=git
+    path=/var/www/qademo/latest/orbit-mongo-node
+    state=directory
+    mode=775
+    recurse=yes
+
+- name: Checkout the git repository
+  become: git
+  git: >
+    repo=ssh://git@gitlab.dominopos.com:21212/dominopos/orbit-mongo-node.git
+    dest=/var/www/qademo/latest/orbit-mongo-node
+    accept_hostkey=yes
+    key_file=/home/git/.ssh/id_jenkins
+    version=master

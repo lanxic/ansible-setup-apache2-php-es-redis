@@ -1,0 +1,55 @@
+---
+- name: Wait until the file /usr/bin/python is present before continuing
+  wait_for:
+    path: /usr/bin/python
+
+- name: change interface to static
+  shell: sed -i 's/dhcp/static/g' /etc/network/interfaces
+
+- name: give resolv config base
+  shell: echo 'nameserver 10.10.1.1' | tee /etc/resolvconf/resolv.conf.d/base
+
+- name: Create git group
+  group: >
+    name=git
+    gid=10000
+
+- name: Create git User
+  user: >
+    name=git
+    group=git
+    uid=10000
+    createhome=yes
+    shell=/bin/bash
+
+- name: Create user SSH directory
+  file: >
+    path=/home/git/.ssh
+    mode=700
+    state=directory
+    owner=git
+    group=git
+
+- name: Deploy the readonly authorized-keys
+  copy: >
+    src=files/authorized_keys
+    dest=/home/git/.ssh/authorized_keys
+    mode=664
+    owner=git
+    group=git
+
+- name: Deploy the readonly id_jenkins
+  copy: >
+    src=files/id_jenkins
+    dest=/home/git/.ssh/id_jenkins
+    mode=600
+    owner=git
+    group=git
+
+- name: Deploy the readonly id_jenkins.pub
+  copy: >
+    src=files/id_jenkins.pub
+    dest=/home/git/.ssh/id_jenkins.pub
+    mode=664
+    owner=git
+    group=git

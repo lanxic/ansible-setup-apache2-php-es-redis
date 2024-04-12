@@ -1,0 +1,174 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install depedency for default
+  apt: >
+    name={{item}} state=present
+    install_recommends=no
+  with_items:
+    - build-essential
+    - tcl8.5
+    - htop
+    - wget
+    - postfix
+    - postfix-pcre
+    - dovecot-mysql
+    - dovecot-core
+    - dovecot-pop3d
+    - dovecot-imapd
+    - mailutils
+    - procmail
+    - rsyslog
+    - supervisor
+    - mysql-client
+
+- name: Add devnull alias for postfix
+  lineinfile: >
+    dest=/etc/aliases
+    line="devnull: /dev/null"
+    state=present
+
+- name: Add virtual config for map postfix
+  copy: >
+    src=files/mail/blackhole/virtual
+    dest=/etc/postfix/virtual
+    mode=644
+
+- stat: path=/etc/postfix/virtual
+  register: virtual_map
+
+- name: Create postmap db
+  shell: postmap /etc/postfix/virtual
+  when: virtual_map.stat.exists == True
+  notify: Start/Restart postfix and Start @ Boot
+
+- name: Add user git to mail group
+  shell: usermod -aG mail git
+
+- name: update dovecot config
+  copy: >
+    src=files/mail/blackhole/dovecot_conf
+    dest=/etc/dovecot/dovecot.conf
+    mode=644
+
+- name: update dovecot conf for 10-auth
+  copy: >
+    src=files/mail/blackhole/dovecot_conf_10-auth_conf
+    dest=/etc/dovecot/conf.d/10-auth.conf
+    mode=644
+
+- name: update dovecot conf for 10-master
+  copy: >
+    src=files/mail/blackhole/dovecot_conf_10-master_conf
+    dest=/etc/dovecot/conf.d/10-master.conf
+    mode=644
+
+- name: update dovecot conf for auth-system
+  copy: >
+    src=files/mail/blackhole/dovecot_conf_auth-system_conf_ext
+    dest=/etc/dovecot/conf.d/auth-system.conf.ext
+    mode=644
+  notify: Start/Restart dovecot and Start @ Boot
+
+- name: initial nginx_signing
+  raw: wget http://nginx.org/keys/nginx_signing.key -O - | sudo apt-key add -
+
+- name: Check nginx_list.
+  stat: path=/etc/apt/sources.list.d/nginx.list
+  register: nginx_list
+
+- name: add sources deb nginx
+  raw: echo 'deb http://nginx.org/packages/ubuntu/ trusty nginx' >> /etc/apt/sources.list.d/nginx.list
+  when: nginx_list.stat.exists == false
+
+- name: add source deb src nginx
+  raw: echo 'deb-src http://nginx.org/packages/ubuntu/ trusty nginx' >> /etc/apt/sources.list.d/nginx.list
+  when: nginx_list.stat.exists == false
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing packages nginx
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - nginx
+    - vim
+    - curl
+
+- name: initialing packages for php7.0
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - python-software-properties
+    - software-properties-common
+
+- name: addRepository ondrej/php
+  apt_repository: >
+    repo='ppa:ondrej/php'
+    state=present
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: initialing packages for php7.0
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - php7.0
+    - php7.0-fpm
+    - php7.0-curl
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-gd
+    - php7.0-cli
+    - php7.0-zip
+    - php7.0-mbstring
+    - php7.0-xml
+
+- name: Load module mcrypt
+  shell: phpenmod mcrypt
+
+- name: Disable default pool
+  shell: mv /etc/php/7.0/fpm/pool.d/www.conf /etc/php/7.0/fpm/pool.d/www.disabled creates=/etc/php/7.0/fpm/pool.d/www.disabled
+
+- name: Deploy php7.0-fpm configuration
+  copy: >
+    src=files/nginxPhp7/php-fpm.default
+    dest=/etc/php/7.0/fpm/pool.d/default.conf
+    mode=0775
+  notify: Start/Restart php7.0-fpm and Start @ Boot
+
+- name: Deploy nginx configuration for roundcubemail
+  copy: >
+    src=files/mail/blackhole/01-mail-roundcube-conf
+    dest=/etc/nginx/conf.d/01-mail-roundcube.conf
+    mode=0775
+  notify: Start/Restart nginx and Start @ Boot
+
+- name: Download roundcubemail latest
+  get_url: >
+    url=https://github.com/roundcube/roundcubemail/releases/download/1.3.0/roundcubemail-1.3.0-complete.tar.gz
+    dest=/tmp/roundcubemail-1.3.0-complete.tar.gz
+    validate_certs=no
+
+- stat: path=/tmp/roundcubemail-1.3.0-complete.tar.gz
+  register: roundcube_tmp
+
+- name: Extract roundcubemail
+  unarchive: >
+    src=/tmp/roundcubemail-1.3.0-complete.tar.gz
+    dest=/opt/
+    creates=roundcubemail-1.3.0
+    copy=no
+  when: roundcube_tmp.stat.exists == True
+
+- name: Create symlink roundcubemail
+  file: >
+      src=/opt/roundcubemail-1.3.0
+      dest=/opt/roundcubemail
+      state=link

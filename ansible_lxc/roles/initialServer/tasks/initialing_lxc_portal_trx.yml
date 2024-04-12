@@ -1,0 +1,131 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install depedency for default
+  apt: >
+    name={{item}} state=present
+    install_recommends=no
+  with_items:
+    - build-essential
+    - tcl8.5
+    - htop
+    - wget
+    - rsyslog
+    - supervisor
+    - mysql-client
+    - rsync
+    - language-pack-en-base
+
+- name: initial nginx_signing
+  raw: wget http://nginx.org/keys/nginx_signing.key -O - | sudo apt-key add -
+
+- name: Check nginx_list.
+  stat: path=/etc/apt/sources.list.d/nginx.list
+  register: nginx_list
+
+- name: add sources deb nginx
+  raw: echo 'deb http://nginx.org/packages/ubuntu/ trusty nginx' >> /etc/apt/sources.list.d/nginx.list
+  when: nginx_list.stat.exists == false
+
+- name: add source deb src nginx
+  raw: echo 'deb-src http://nginx.org/packages/ubuntu/ trusty nginx' >> /etc/apt/sources.list.d/nginx.list
+  when: nginx_list.stat.exists == false
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing packages nginx
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - nginx
+    - vim
+    - curl
+
+- name: initialing packages for php7.0
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - python-software-properties
+    - software-properties-common
+
+- name: addRepository ondrej/php
+  apt_repository: >
+    repo='ppa:ondrej/php'
+    state=present
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: initialing packages for php7.0
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - php7.0
+    - php7.0-fpm
+    - php7.0-curl
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-gd
+    - php7.0-cli
+    - php7.0-zip
+    - php7.0-mbstring
+    - php7.0-xml
+
+- name: Load module mcrypt
+  shell: phpenmod mcrypt
+
+- name: Disable default pool
+  shell: mv /etc/php/7.0/fpm/pool.d/www.conf /etc/php/7.0/fpm/pool.d/www.disabled creates=/etc/php/7.0/fpm/pool.d/www.disabled
+
+- name: Deploy php7.0-fpm configuration
+  copy: >
+    src=files/nginxPhp7/php-fpm.default
+    dest=/etc/php/7.0/fpm/pool.d/php-fpm.default.conf
+    mode=0775
+
+- name: Check composer_list.
+  stat: path=/usr/local/bin/composer
+  register: composer_list
+
+- name: initial composer
+  raw: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin
+  when: composer_list.stat.exists == false
+
+- name: Create symlink composer
+  file: >
+    src=/usr/local/bin/composer.phar
+    dest=/usr/local/bin/composer
+    state=link
+
+- name: make composer alternatives
+  alternatives:
+    name: composer
+    link: /usr/bin/composer
+    path: /usr/local/bin/composer
+    priority: 99
+
+- name: addRepository brightbox/ruby-ng
+  apt_repository: >
+    repo='ppa:brightbox/ruby-ng'
+    state=present
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing ruby2.2
+  apt: "name=ruby2.2 state=installed"
+
+- name: Check sass_list.
+  stat: path=/usr/local/bin/sass
+  register: sass_list
+
+- name: installing sass
+  raw: gem install sass --pre
+  when: sass_list.stat.exists == false

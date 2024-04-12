@@ -1,0 +1,13 @@
+<?php
+
+$config['default_host'] = 'mail.manroe.cool';
+
+$config['smtp_server'] = 'localhost';
+
+$config['support_url'] = '';
+
+$config['des_key'] = 'OPdPVKKCmbYcRssnqkm5JBcT';
+
+$config['plugins'] = array();
+
+$config['product_name'] = 'Manroe Dummy Mail Server';

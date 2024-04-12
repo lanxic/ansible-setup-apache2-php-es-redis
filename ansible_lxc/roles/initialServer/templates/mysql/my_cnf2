@@ -1,0 +1,77 @@
+[client]
+port		= {{ db_port }}
+socket		= /var/run/mysqld/mysqld.sock
+
+
+[mysqld_safe]
+socket		= /var/run/mysqld/mysqld.sock
+nice		= 0
+
+[mysqld]
+user		= mysql
+pid-file	= /var/run/mysqld/mysqld.pid
+socket		= /var/run/mysqld/mysqld.sock
+port		= 3306
+basedir		= /usr
+datadir		= /data/mysql
+tmpdir		= /var/lib/mysqltmp
+lc-messages-dir	= /usr/share/mysql
+skip-external-locking
+
+log_bin_trust_function_creators = 1
+bind-address		= {{ db_bind_address }}
+key_buffer		= 16M
+max_allowed_packet	= 16M
+thread_stack		= 192K
+thread_cache_size       = 8
+myisam-recover         = BACKUP
+
+max_connections        = 120
+table_cache            = 2048
+
+thread_concurrency     = 12
+query_cache_limit	= 2M
+query_cache_size        = 32M
+log_error = /var/log/mysql/error.log
+log_slow_queries	= /var/log/mysql/mysql-slow.log
+long_query_time = 2
+server-id		= {{ item.db_db_id }}
+log_bin			= /var/log/mysql/mysql-bin.log
+binlog_format		= MIXED
+expire_logs_days	= 10
+max_binlog_size         = 100M
+{% if item.db_repl_role == 'slave' %}
+read_only		= ON
+{% endif %}
+
+binlog_cache_size	= 2M
+read_buffer_size	= 4M
+read_rnd_buffer_size	= 16M
+sort_buffer_size	= 8M
+join_buffer_size	= 8M
+tmp_table_size		= 64M
+
+
+innodb_additional_mem_pool_size = 16M
+innodb_buffer_pool_size         = 4G
+innodb_file_format              = Barracuda
+innodb_file_per_table
+innodb_open_files               = 600
+innodb_flush_log_at_trx_commit  = 2
+innodb_log_buffer_size          = 256M
+innodb_log_file_size            = 1G
+innodb_lock_wait_timeout        = 12
+innodb_write_io_threads         = 16
+innodb_doublewrite		= 0
+
+[mysqldump]
+quick
+quote-names
+max_allowed_packet	= 16M
+
+[mysql]
+
+[isamchk]
+key_buffer		= 16M
+
+!includedir /etc/mysql/conf.d/

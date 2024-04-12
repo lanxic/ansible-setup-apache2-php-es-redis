@@ -1,0 +1,42 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing packages
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - python2.7-minimal
+    - python-boto
+    - vim
+    - unzip
+    - curl
+    - htop
+    - language-pack-en-base
+    - python-mysqldb
+
+- name: Check if MySQL is already installed.
+  stat: path=/etc/init.d/mysql
+  register: mysql_installed
+
+- name: Download mysql apt config source
+  get_url: >
+    url=http://dev.mysql.com/get/mysql-apt-config_0.6.0-1_all.deb
+    dest=/tmp/mysql-apt-config_0.6.0-1_all.deb
+    validate_certs=no
+
+- name: Install a config .deb package
+  apt:
+    deb: /tmp/mysql-apt-config_0.6.0-1_all.deb
+
+- name: Update apt cache if MySQL is not yet installed.
+  apt: update_cache=yes
+  when: mysql_installed.stat.exists == false
+
+- name: Ensure MySQL packages are installed.
+  apt: "name=mysql-server state=installed"
+  when: mysql_installed.stat.exists == false
+  
+- name: restart mysql service
+  action: service name=mysql state=restarted enabled=true

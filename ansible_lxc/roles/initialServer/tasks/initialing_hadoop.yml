@@ -1,0 +1,94 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install depedency for hadoop
+  apt: >
+    name={{item}} state=present
+  with_items:
+    - build-essential
+    - tcl8.5
+    - htop
+
+- name: Download Java source
+  get_url: >
+    url=http://mirrors.linuxeye.com/jdk/jdk-8u121-linux-x64.tar.gz
+    dest=/tmp/jdk-8u121-linux-x64.tar.gz
+    validate_certs=no
+
+- stat: path=/tmp/jdk-8u121-linux-x64.tar.gz
+  register: java_tmp
+
+- name: Extract Java
+  unarchive: >
+    src=/tmp/jdk-8u121-linux-x64.tar.gz
+    dest=/opt/
+    creates=jdk-8u121-linux-x64
+    copy=no
+  when: java_tmp.stat.exists == True
+
+- name: Create symlink java
+  file: >
+      src=/opt/jdk1.8.0_121
+      dest=/opt/java
+      state=link
+
+- name: Create hadoop group
+  group: >
+    name=hadoop
+    gid=20000
+
+- name: Create hadoop User
+  user: >
+    name=hduser
+    group=hadoop
+    uid=20000
+    createhome=yes
+    shell=/bin/bash
+
+- name: Create user SSH directory
+  file: >
+    path=/home/hduser/.ssh
+    mode=700
+    state=directory
+    owner=hduser
+    group=hadoop
+
+- name: Deploy the readonly authorized-keys
+  copy: >
+    src=files/authorized_keys_hadoop
+    dest=/home/hduser/.ssh/authorized_keys
+    mode=664
+    owner=hduser
+    group=hadoop
+
+- name: Download Hadoop source
+  get_url: >
+    url=http://apache.repo.unpas.ac.id/hadoop/common/hadoop-2.8.1/hadoop-2.8.1.tar.gz
+    dest=/tmp/hadoop-2.8.1.tar.gz
+
+- stat: path=/tmp/hadoop-2.8.1.tar.gz
+  register: hadoop_tmp
+
+- name: Extract hadoop
+  unarchive: >
+    src=/tmp/hadoop-2.8.1.tar.gz
+    dest=/opt/
+    creates=hadoop-2.8.1
+    copy=no
+  when: hadoop_tmp.stat.exists == True
+
+- name: change owner hadoop
+  file: >
+    path=/opt/hadoop-2.8.1
+    mode=775
+    owner=hduser
+    group=hadoop
+
+- name: Create symlink hadoop
+  file: >
+      src=/opt/hadoop-2.8.1
+      dest=/opt/hadoop
+      state=link

@@ -1,0 +1,18 @@
+protocols = pop3 imap
+mail_location = mbox:~/mail:INBOX=/var/spool/mail/%u
+disable_plaintext_auth = no
+ssl = no
+
+userdb {
+  driver = passwd
+}
+passdb {
+  args = %s
+  driver = pam
+}
+protocol pop3 {
+     listen = *:110
+}
+protocol imap {
+     listen = *:143
+}

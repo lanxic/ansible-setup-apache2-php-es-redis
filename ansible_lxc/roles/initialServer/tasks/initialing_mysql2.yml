@@ -1,0 +1,65 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: installing packages
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - python2.7-minimal
+    - python-boto
+    - vim
+    - unzip
+    - curl
+    - htop
+    - language-pack-en-base
+    - python-mysqldb
+
+- name: Check if MySQL is already installed.
+  stat: path=/etc/init.d/mysql
+  register: mysql_installed
+
+- name: Update apt cache if MySQL is not yet installed.
+  apt: update_cache=yes
+  when: mysql_installed.stat.exists == false
+
+- name: Ensure MySQL packages are installed.
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - mysql-common
+    - mysql-server
+    - libmysqlclient-dev
+  when: mysql_installed.stat.exists == false
+
+- name: Create the directory datatmp mysql
+  file: >
+    owner=mysql
+    group=mysql
+    path=/data/mysqltmp
+    mode=700
+    state=directory
+    recurse=yes
+
+- name: Create the directory data mysql
+  file: >
+    owner=mysql
+    group=mysql
+    path=/data/mysql
+    mode=700
+    state=directory
+    recurse=yes
+
+- name: insert/update apparmor for mysql after /var/lib/mysql/** rwk, line
+  blockinfile:
+    path: /etc/apparmor.d/usr.sbin.mysqld
+    insertafter: "/var/lib/mysql/** rwk,"
+    content: |
+      /data/mysql/ r,
+      /data/mysql/** rwk,
+
+- name: copy the my.cnf file
+  action: template src=mysql/my_cnf2 dest=/etc/mysql/my.cnf owner=root mode=0644
+
+- name: restart mysql service
+  action: service name=mysql state=restarted enabled=true

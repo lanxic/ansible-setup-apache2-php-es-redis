@@ -1,0 +1,26 @@
+# ElasticSearch upstart script
+description     "ElasticSearch service"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+# Respawn the job if it got killed without using `service stop`
+respawn
+
+# Try to respawn 10 times within period 30 seconds and then give up
+respawn limit 5 30
+
+# File descriptor limit
+limit nofile 65536 65536
+
+# Environment variables needed by elasticsearch launcher script
+env JAVA_HOME=/opt/java
+env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$JAVA_HOME/bin
+env ES_HEAP_SIZE=6000m
+
+# User/Group which run elasticsearch
+setuid elasticsearch
+setgid elasticsearch
+
+# Path to launcher
+exec /opt/elasticsearch/bin/elasticsearch

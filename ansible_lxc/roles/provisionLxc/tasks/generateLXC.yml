@@ -1,0 +1,55 @@
+---
+- name: generate lxc_container for {{item.name}}
+  lxc_container:
+    template: ubuntu
+    name: "{{ item.name }}"
+    template_options: --release trusty --auth-key ~/.ssh/id_rsa.pub
+    container_command: |
+      apt-get update -y
+      apt-get install -y openssh-server python-dev
+      sed -i 's/dhcp/static/g' /etc/network/interfaces
+      echo 'nameserver 10.11.0.1' | tee /etc/resolvconf/resolv.conf.d/base
+      echo '%admins ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/admins
+      groupadd admins
+      usermod -aG admins ubuntu
+      mkdir -p /home/ubuntu/.ssh
+      echo '
+      ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+gWdFeQ3+WGguWWzHSixIteAcfFyWpay9pS8o8AoXyf0BQ28DDNmeyoIn71zFGr7SO9iedH5rSBcjpqvr8d0bhUimyHykUP+nz87cp7NL2pw4r5CcGgiEML+BV+pVglBXtZKN3bnbJOwPiv2yF0tYmaMbxP6fUPxct97vfqiK0czBMxhXHfg8EsBTUo4hTu088n5UrKqpC4H5wf30N51a2MpNxGDUTG+nIu1Q5sxL+ITyhUs2+hklxT5NYPQqz01iI/dU+Ecnp1SRJYowaMa6bjTQ+tBqK9shOuAvLrbTnX68Oqq+BH24v4WEfvYpBG7/ZyPdFSzZrk5/NkefNQD/ Alex
+      '|tee /home/ubuntu/.ssh/authorized_keys
+      chmod 700 /home/ubuntu/.ssh/
+      chown -R ubuntu:ubuntu /home/ubuntu/ -f
+    container_config:
+      - "lxc.start.auto = 1"
+      - "lxc.network.ipv4 = {{ item.ips }}/24 10.11.0.255"
+      - "lxc.network.ipv4.gateway = 10.11.0.1"
+  with_items: "{{ active_apps }}"
+  register: containers_info
+
+- name: Get containers info now that IPs are available
+  lxc_container:
+    name: "{{ item.name }}"
+  with_items: "{{ active_apps }}"
+  register: containers_info
+
+- name: Register the hosts in the inventory {{ item.ips}}
+  add_host:
+    hostname: "{{ item.ips}}"
+    groupname: "{{ item.service }}"
+  with_items: "{{ active_apps }}"
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item.lxc_container.ips.0 }}"
+    port: 22
+    delay: 30
+    timeout: 320
+    state: started
+  with_items: "{{ containers_info.results }}"
+
+- name: Wait until the file /usr/bin/python is present before continuing
+  wait_for:
+    path: /usr/bin/python
+
+# - name: Wait for the network to be setup in the containers
+#   pause: minutes=5
+#   when: containers_info|changed
