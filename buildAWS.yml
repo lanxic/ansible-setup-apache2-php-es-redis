@@ -1,0 +1,17 @@
+---
+- name: Install ansible for aws instance
+  hosts: local
+  connection: local
+  become: True
+  gather_facts: False
+  tags: provisioning
+  roles:
+    - provisionAWS
+
+- name: Initial instance for staging1
+  hosts: staging1-launch
+  become: True
+  gather_facts: False
+  tags: InitialApps
+  roles:
+    - initialApps

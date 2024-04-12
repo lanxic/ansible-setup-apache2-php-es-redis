@@ -1,0 +1,29 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install php-fpm and deps
+  apt: name={{ item }} state=present
+  with_items:
+    - curl
+    - php5-fpm
+    - php5-curl
+    - php5-mcrypt
+    - php5-mysql
+    - php5-gd
+
+- name: Load module mcrypt
+  shell: php5enmod mcrypt
+
+- name: Disable default pool
+  shell: mv /etc/php5/fpm/pool.d/www.conf /etc/php5/fpm/pool.d/www.disabled creates=/etc/php5/fpm/pool.d/www.disabled
+  notify: restart php5-fpm and Start @ Boot
+
+- name: Deploy php5-fpm configuration
+  copy: >
+    src=php-fpm.default
+    dest=/etc/php5/fpm/pool.d/default.conf
+    mode=0775
+  notify: restart php5-fpm and Start @ Boot

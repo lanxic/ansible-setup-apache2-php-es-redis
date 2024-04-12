@@ -1,0 +1,59 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install depedency for redis
+  apt: >
+    name={{item}} state=present
+  with_items:
+    - build-essential
+    - tcl8.5
+
+- name: Download Redis source
+  get_url: >
+    url=http://download.redis.io/redis-stable.tar.gz
+    dest=/tmp/redis-stable.tar.gz
+    validate_certs=no
+
+- stat: path=/tmp/redis-stable.tar.gz
+  register: redis_tmp
+
+- name: Extract Redis
+  unarchive: >
+    src=/tmp/redis-stable.tar.gz
+    dest=/tmp/
+    creates=redis-stable
+    copy=no
+  when: redis_tmp.stat.exists == True
+
+- name: Go to directory redis installation and install
+  make: >
+    chdir=/tmp/redis-stable
+    target=install
+
+- name: Create the diretory data
+  file: >
+    path=/opt/redis/data
+    mode=775
+    state=directory
+
+- name: Create the diretory data
+  file: >
+    path=/etc/redis/
+    mode=775
+    state=directory
+
+- name: Deploy custom redis.conf File
+  copy: >
+    src=redis/redis_conf
+    dest=/etc/redis/redis.conf
+    mode=0644
+
+- name: Deploy init redis File
+  copy: >
+    src=redis/redis_initd
+    dest=/etc/init.d/redis
+    mode=0775
+  notify: Start/Restart redis and Start @ Boot

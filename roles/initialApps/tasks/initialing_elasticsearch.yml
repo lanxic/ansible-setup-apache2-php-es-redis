@@ -1,0 +1,101 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Download Java source
+  get_url: >
+    url=http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.tar.gz
+    dest=/tmp/jdk-8u121-linux-x64.tar.gz
+    validate_certs=no
+    headers="Cookie: oraclelicense=accept-securebackup-cookie"
+
+- stat: path=/tmp/jdk-8u121-linux-x64.tar.gz
+  register: java_tmp
+
+- name: Extract Java
+  unarchive: >
+    src=/tmp/jdk-8u121-linux-x64.tar.gz
+    dest=/opt/
+    creates=jdk-8u121-linux-x64
+    copy=no
+  when: java_tmp.stat.exists == True
+
+- name: Create symlink java
+  file: >
+      src=/opt/jdk1.8.0_121
+      dest=/opt/java
+      state=link
+
+- name: Download Elasticsearch source 2.3.3
+  get_url: >
+    url=https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.3/elasticsearch-2.3.3.tar.gz
+    dest=/tmp/elasticsearch-2.3.3.tar.gz
+    validate_certs=no
+
+- stat: path=/tmp/elasticsearch-2.3.3.tar.gz
+  register: es_tmp
+
+- name: Extract elasticsearch
+  unarchive: >
+    src=/tmp/elasticsearch-2.3.3.tar.gz
+    dest=/opt/
+    creates=elasticsearch-2.3.3
+    copy=no
+  when: es_tmp.stat.exists == True
+
+- name: Create symlink elasticsearch
+  file: >
+      src=/opt/elasticsearch-2.3.3
+      dest=/opt/elasticsearch
+      state=link
+
+- name: Create elasticsearch group
+  group: >
+    name=elasticsearch
+
+- name: Create elasticsearch User
+  user: >
+    name=elasticsearch
+    group=elasticsearch
+    createhome=no
+    home=/opt/elasticsearch
+    shell=/bin/false
+
+- name: Change owner /opt/elasticsearch to elasticsearch
+  file: >
+    owner=elasticsearch
+    group=elasticsearch
+    path=/opt/elasticsearch/
+    state=directory
+    mode=775
+
+- name: Create the directory data elasticsearch
+  file: >
+    owner=elasticsearch
+    group=elasticsearch
+    path=/var/elasticsearch/data
+    mode=775
+    state=directory
+
+- name: Create the directory snapshot elasticsearch
+  file: >
+    owner=elasticsearch
+    group=elasticsearch
+    path=/var/elasticsearch/snapshot
+    mode=775
+    state=directory
+
+- name: Deploy custom elasticsearch.yml File
+  copy: >
+    src=elasticsearch/elasticsearch_yml
+    dest=/opt/elasticsearch/config/elasticsearch.yml
+    mode=0644
+
+- name: Deploy upstart elasticsearch File
+  copy: >
+    src=elasticsearch/elasticsearch_upstart
+    dest=/etc/init/elasticsearch.conf
+    mode=0775
+  notify: Start/Restart elasticsearch and Start @ Boot

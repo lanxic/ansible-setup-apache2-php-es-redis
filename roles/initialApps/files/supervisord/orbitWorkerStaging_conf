@@ -1,0 +1,9 @@
+[program:orbit-staging1-queue]
+command=/usr/bin/php artisan queue:listen --tries=3 --queue=gtm_v34,gtm_export_csv,gtm_email,cdn_upload,store_sync
+directory=/var/www/staging/orbit-mall-api/
+autostart=true
+autorestart=true
+startretries=3
+stderr_logfile=/var/log/orbit-staging1-queue.err.log
+stdout_logfile=/var/log/orbit-staging1-queue.out.log
+user=git

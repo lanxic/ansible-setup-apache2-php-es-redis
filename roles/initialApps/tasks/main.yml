@@ -1,0 +1,9 @@
+---
+- include: initialing_users.yml
+- include: initialing_php_fpm.yml
+- include: initialing_apache.yml
+- include: initialing_beanstalkd.yml
+- include: initialing_redis.yml
+- include: initialing_mysql.yml
+- include: initialing_elasticsearch.yml
+- include: initialing_supervisor.yml

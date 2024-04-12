@@ -1,0 +1,29 @@
+---
+- name: Create git group
+  group: >
+    name=git
+    gid=10000
+
+- name: Create git User
+  user: >
+    name=git
+    group=git
+    uid=10000
+    createhome=yes
+    shell=/bin/bash
+
+- name: Create user SSH directory
+  file: >
+    path=/home/git/.ssh
+    mode=700
+    state=directory
+    owner=git
+    group=git
+
+- name: Deploy the readonly authorized-keys
+  copy: >
+    src=files/authorized_keys
+    dest=/home/git/.ssh/authorized_keys
+    mode=664
+    owner=git
+    group=git

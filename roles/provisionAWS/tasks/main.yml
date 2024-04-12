@@ -1,0 +1,3 @@
+---
+- include: generateEC2_securityGroup.yml
+- include: generateEC2_instance.yml

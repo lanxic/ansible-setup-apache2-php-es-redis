@@ -1,0 +1,10 @@
+# config for provisionAWS
+instance_type: YOUR_INSTANCE
+security_group: SG_NAME
+image_ubuntu_1404: AMI_IMAGES
+region: REGION
+keypair: KEYPAIR
+vpc_id: VPC_ID
+
+# config for installing Apps
+apache_path_config: /etc/apache2

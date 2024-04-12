@@ -1,0 +1,8 @@
+[program:mailHog]
+command=/opt/MailHog_linux_amd64
+autostart=true
+autorestart=true
+startretries=3
+stderr_logfile=/var/log/mailHog.err.log
+stdout_logfile=/var/log/mailHog.log
+user=root

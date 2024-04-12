@@ -1,0 +1,27 @@
+---
+- name: Start/Restart nginx and Start @ Boot
+  service: name=nginx state=restarted enabled=yes
+
+- name: restart php5-fpm and Start @ Boot
+  service: name=php5-fpm state=restarted enabled=yes
+
+- name: Start/Restart apache2 and Start @ Boot
+  service: name=apache2 state=restarted enabled=yes
+
+- name: Start/Restart redis and Start @ Boot
+  service: name=redis state=restarted enabled=yes
+
+- name: Start/Restart Beanstalkd and Start @ Boot
+  service: name=beanstalkd state=restarted enabled=yes
+
+- name: Start/Restart mysqld and Start @ Boot
+  service: name=mysql state=restarted enabled=yes
+
+- name: Start/Restart supervisord and Start @ Boot
+  service: name=supervisor state=restarted enabled=yes
+
+- name: Start/Restart elasticsearch and Start @ Boot
+  service: name=elasticsearch state=restarted enabled=yes
+
+- name: Start/Restart supervisor and Start @ Boot
+  service: name=supervisor state=restarted enabled=yes

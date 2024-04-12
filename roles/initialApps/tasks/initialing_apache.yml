@@ -1,0 +1,124 @@
+---
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Install Apache
+  apt: name=apache2 state=present
+
+- name: remove mpm_prefork
+  shell: rm -f /etc/apache2/mods-available/mpm_prefork.*
+
+- name: Enable module rewrite
+  apache2_module: >
+      name={{ item }}
+      state=present
+  with_items:
+    - access_compat
+    - alias
+    - auth_basic
+    - authn_file
+    - authn_core
+    - authz_core
+    - authz_host
+    - authz_user
+    - autoindex
+    - deflate
+    - dir
+    - env
+    - expires
+    - filter
+    - headers
+    - mime
+    - mpm_event
+    - negotiation
+    - proxy_fcgi
+    - proxy_http
+    - proxy
+    - remoteip
+    - rewrite
+    - setenvif
+    - socache_shmcb
+    - status
+
+- name: Deploy https-redirect config apache2
+  copy: >
+      src=apache2/991https-redirect.conf
+      dest={{ apache_path_config }}/sites-available/991https-redirect.conf
+      mode=0644
+
+- name: Deploy admin staging config apache2
+  copy: >
+      src=apache2/992admin-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/992admin-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy landing staging config apache2
+  copy: >
+      src=apache2/993landing-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/993landing-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy mall api staging config apache2
+  copy: >
+      src=apache2/994mall-api-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/994mall-api-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy mall staging config apache2
+  copy: >
+      src=apache2/995mall-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/995mall-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy mdm staging config apache2
+  copy: >
+      src=apache2/996mdm-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/996mdm-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy pmp staging config apache2
+  copy: >
+      src=apache2/997pmp-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/997pmp-staging1.gotomalls.conf
+      mode=0644
+
+- name: Deploy shop staging config apache2
+  copy: >
+      src=apache2/998shop-api-staging1.gotomalls.conf
+      dest={{ apache_path_config }}/sites-available/998shop-api-staging1.gotomalls.conf
+      mode=0644
+
+- name: Enable https-redirect config apache2
+  shell: a2ensite 991https-redirect.conf
+
+- name: Enable admin staging config apache2
+  shell: a2ensite 992admin-staging1.gotomalls.conf
+
+- name: Enable landing staging config apache2
+  shell: a2ensite 993landing-staging1.gotomalls.conf
+
+- name: Enable mall api staging config apache2
+  shell: a2ensite 994mall-api-staging1.gotomalls.conf
+
+- name: Enable mall staging config apache2
+  shell: a2ensite 995mall-staging1.gotomalls.conf
+
+- name: Enable mdm staging config apache2
+  shell: a2ensite 996mdm-staging1.gotomalls.conf
+
+- name: Enable pmp staging config apache2
+  shell: a2ensite 997pmp-staging1.gotomalls.conf
+
+- name: Enable shop staging config apache2
+  shell: a2ensite 998shop-api-staging1.gotomalls.conf
+
+- name: Create the diretory staging
+  file: >
+    path=/var/www/staging
+    owner=git
+    group=git
+    mode=775
+    state=directory
+  notify: Start/Restart apache2 and Start @ Boot

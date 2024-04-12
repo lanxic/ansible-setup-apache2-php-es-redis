@@ -1,0 +1,43 @@
+---
+- name: generate SecurityGroups for staging
+  ec2_group:
+    name: "{{ security_group }}"
+    description: an staging1 EC2 group
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 101.128.64.0/18
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 172.31.0.0/16
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 101.128.64.0/18
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 172.31.0.0/16
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 101.128.64.0/18
+      - proto: tcp
+        from_port: 8000
+        to_port: 8000
+        cidr_ip: 172.31.0.0/16
+      - proto: icmp
+        from_port: -1 # icmp type, -1 = any type
+        to_port:  -1 # icmp subtype, -1 = any subtype
+        cidr_ip: 101.128.64.0/18
+      - proto: -1
+        from_port: -1 # icmp type, -1 = any type
+        to_port:  -1 # icmp subtype, -1 = any subtype
+        cidr_ip: 101.128.64.0/18
+  register: staging_firewall

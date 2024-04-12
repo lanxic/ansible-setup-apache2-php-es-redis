@@ -1,0 +1,42 @@
+---
+- name: Check if supervisord is already installed.
+  stat: path=/etc/init.d/supervisor
+  register: supervisor_installed
+
+- name: Update apt cache if supervisord is not yet installed.
+  apt: update_cache=yes
+  when: supervisor_installed.stat.exists == false
+
+- name: Ensure supervisor packages are installed.
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - supervisor
+
+- name: Download Mailhog
+  get_url: >
+    url=https://github.com/mailhog/MailHog/releases/download/v0.2.1/MailHog_linux_amd64
+    dest=/opt/MailHog_linux_amd64
+    validate_certs=no
+
+- name: give execute mailhog
+  file: >
+    path=/opt/MailHog_linux_amd64
+    mode=775
+
+- name: Download mailhog sendmail
+  get_url: >
+    url=https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64
+    dest=/opt/mhsendmail_linux_amd64
+    validate_certs=no
+
+- name: give execute mailhog sendmail
+  file: >
+    path=/opt/mhsendmail_linux_amd64
+    mode=775
+
+- name: deploy mailhog to supervisord
+  copy: >
+    src=supervisord/mailHog_conf
+    dest=/etc/supervisor/conf.d/mailHog.conf
+    mode=0775
+  notify: Start/Restart supervisor and Start @ Boot

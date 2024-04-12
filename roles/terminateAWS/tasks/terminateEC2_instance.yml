@@ -1,0 +1,19 @@
+---
+- name: find instance for terminating...
+  ec2_remote_facts:
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key }}"
+    region: "{{ region }}"
+    filters:
+      instance-state-name: running
+      "tag:Name": 'staging1'
+  register: filter_instance
+
+- name: Terminate "{{ filter_instance.instances[0].id }}" instance in {{ region }}
+  ec2:
+    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key }}"
+    region: "{{ region }}"
+    instance_ids: "{{ filter_instance.instances[0].id }}"
+    wait: yes
+    state: "absent"

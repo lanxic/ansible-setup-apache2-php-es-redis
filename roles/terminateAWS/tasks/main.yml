@@ -1,0 +1,3 @@
+---
+- include: terminateEC2_instance.yml
+- include: TerminateEC2_securityGroup.yml

@@ -1,0 +1,20 @@
+---
+- name: Check if Beanstalkd is already installed.
+  stat: path=/etc/init.d/beanstalkd
+  register: beanstalkd_installed
+
+- name: Update apt cache if Beanstalkd is not yet installed.
+  apt: update_cache=yes
+  when: beanstalkd_installed.stat.exists == false
+
+- name: Ensure Beanstalkd packages are installed.
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - beanstalkd
+
+- name: Store the data to disk
+  lineinfile: >
+    dest=/etc/default/beanstalkd
+    line=BEANSTALKD_EXTRA="-b /var/lib/beanstalkd"
+    state=present
+  notify: Start/Restart Beanstalkd and Start @ Boot
